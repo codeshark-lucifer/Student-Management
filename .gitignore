@@ -1,0 +1,91 @@
+# Git ignore for an OpenGL C++ project (Windows / MinGW / Visual Studio / CMake)
+# Adjust the sections below to keep third-party vendor sources (e.g. `lib/`, `include/`) if you intentionally commit them.
+
+# --- Build output ---
+/build/
+/bin/
+/out/
+/dist/
+cmake-build-*/
+
+# --- Compiled files ---
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
+*.o
+*.obj
+*.lo
+*.slo
+
+# --- Debug / profiling ---
+*.pdb
+*.ilk
+*.idb
+*.sdf
+*.ipch
+*.prof
+*.gcno
+*.gcda
+
+# --- CMake files ---
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.cmake
+Build/
+
+# --- IDE / editor ---
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.VC.db
+*.VC.opendb
+*.vcxproj.user
+*.vcxproj.filters
+
+# JetBrains CLion
+cmake-build-*/
+
+# --- Temp / backup ---
+*.log
+*.tmp
+*.temp
+*~
+.#*
+*.swp
+*.bak
+*.orig
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Packaging / installers ---
+*.msi
+*.7z
+*.zip
+*.tar.gz
+
+# --- Other generated files ---
+*.d
+*.dep
+*.o.d
+
+# --- Optional: ignore prebuilt third-party libraries ---
+# If you vendor prebuilt libs in `lib/` you may want to ignore them. Uncomment if needed:
+# /lib/*.a
+# /lib/*.lib
+# /lib/*.dll
+
+# --- Keep sources, headers and third-party sources by default ---
+# Do NOT ignore `src/`, `include/`, or third-party source directories unless you know
+# those are regenerated or intentionally omitted from the repo.
+
+# End of file
