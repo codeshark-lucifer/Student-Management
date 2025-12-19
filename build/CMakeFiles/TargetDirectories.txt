@@ -1,0 +1,7 @@
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/application.dir
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/edit_cache.dir
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/rebuild_cache.dir
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/list_install_components.dir
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/install.dir
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/install/local.dir
+D:/NUBB/Y2/SDAI/assignment/Student-Management/build/CMakeFiles/install/strip.dir
