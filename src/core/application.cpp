@@ -109,6 +109,7 @@ void Application::Run()
                     std::cout << "  CREATE TABLE <name> (col TYPE [AUTO_INCREMENT] [PRIMARY KEY] [NOT NULL] [DEFAULT <value>], ...)\n";
                     std::cout << "  INSERT <TableName> {json}\n";
                     std::cout << "  SELECT <TableName> [WHERE col = value]\n";
+                    std::cout << "  REMOVE <TableName> [WHERE col = value]\n";
                     std::cout << "  exit\n";
                 }
                 else

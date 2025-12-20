@@ -467,6 +467,57 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
         throw std::runtime_error("Invalid SELECT syntax");
     }
 
+    /* -------- REMOVE --------
+       REMOVE Table
+       REMOVE Table WHERE col = value
+    */
+    if (tokens[0] == "REMOVE")
+    {
+        if (tokens.size() < 2)
+            throw std::runtime_error("Invalid REMOVE syntax");
+
+        QueryResult result;
+        result.hasResult = true;
+
+        auto& table = db.GetTable(tokens[1]);
+
+        // Remove all rows
+        if (tokens.size() == 2)
+        {
+            result.rows = table.rows;
+            table.rows.clear();
+            return result;
+        }
+
+        if (tokens.size() >= 6 && tokens[2] == "WHERE" && tokens[4] == "=")
+        {
+            json value;
+            if (tokens[5].front() == '"')
+                value = tokens[5].substr(1, tokens[5].size() - 2);
+            else
+                value = json::parse(tokens[5]);
+
+            // remove matching rows
+            std::vector<Entity> removed;
+            auto& rows = table.rows;
+            auto it = rows.begin();
+            while (it != rows.end())
+            {
+                if (it->fields.at(tokens[3]).data == value)
+                {
+                    removed.push_back(*it);
+                    it = rows.erase(it);
+                }
+                else ++it;
+            }
+
+            result.rows = removed;
+            return result;
+        }
+
+        throw std::runtime_error("Invalid REMOVE syntax");
+    }
+
     throw std::runtime_error("Unknown command: " + tokens[0]);
 }
 
