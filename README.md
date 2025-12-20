@@ -41,3 +41,19 @@ INSERT users {"name":"Bob"}
 INSERT users {"name":"Carol"}
 SELECT users
 ```
+
+---
+
+## Contributors 👥
+This project is developed by the following contributors:
+
+- **Morm Leapsovann** — Leader — mormleapsovann@gmail.com
+- **Sok Molika** — sokmolika1111@gmail.com
+- **Son Sreybon** — sreybon7753@gmail.com
+- **Chorn Dara** — chorndara423@gmail.com
+- **Lorm Kimlang** — lormkimlang@gmail.com
+
+For more details see `CONTRIBUTORS.md`.
+
+## License 📄
+This project is released under the **MIT License** — see the `LICENSE` file for full text.
