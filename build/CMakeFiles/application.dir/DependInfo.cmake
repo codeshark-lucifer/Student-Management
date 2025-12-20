@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "D:/NUBB/Y2/SDAI/assignment/Student-Management/src/core/application.cpp" "CMakeFiles/application.dir/src/core/application.cpp.obj" "gcc" "CMakeFiles/application.dir/src/core/application.cpp.obj.d"
   "D:/NUBB/Y2/SDAI/assignment/Student-Management/src/main.cpp" "CMakeFiles/application.dir/src/main.cpp.obj" "gcc" "CMakeFiles/application.dir/src/main.cpp.obj.d"
   )
 

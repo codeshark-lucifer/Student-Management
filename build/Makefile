@@ -84,51 +84,6 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-.PHONY : list_install_components/fast
-
-# Special rule for the target install
-install: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
-	C:\msys64\mingw64\bin\cmake.exe -P cmake_install.cmake
-.PHONY : install
-
-# Special rule for the target install
-install/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
-	C:\msys64\mingw64\bin\cmake.exe -P cmake_install.cmake
-.PHONY : install/fast
-
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
-	C:\msys64\mingw64\bin\cmake.exe -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
-
-# Special rule for the target install/local
-install/local/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
-	C:\msys64\mingw64\bin\cmake.exe -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local/fast
-
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
-	C:\msys64\mingw64\bin\cmake.exe -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
-	C:\msys64\mingw64\bin\cmake.exe -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip/fast
-
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\NUBB\Y2\SDAI\assignment\Student-Management\build\CMakeFiles D:\NUBB\Y2\SDAI\assignment\Student-Management\build\\CMakeFiles\progress.marks
@@ -180,6 +135,30 @@ application/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\application.dir\build.make CMakeFiles/application.dir/build
 .PHONY : application/fast
 
+src/core/application.obj: src/core/application.cpp.obj
+.PHONY : src/core/application.obj
+
+# target to build an object file
+src/core/application.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\application.dir\build.make CMakeFiles/application.dir/src/core/application.cpp.obj
+.PHONY : src/core/application.cpp.obj
+
+src/core/application.i: src/core/application.cpp.i
+.PHONY : src/core/application.i
+
+# target to preprocess a source file
+src/core/application.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\application.dir\build.make CMakeFiles/application.dir/src/core/application.cpp.i
+.PHONY : src/core/application.cpp.i
+
+src/core/application.s: src/core/application.cpp.s
+.PHONY : src/core/application.s
+
+# target to generate assembly for a file
+src/core/application.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\application.dir\build.make CMakeFiles/application.dir/src/core/application.cpp.s
+.PHONY : src/core/application.cpp.s
+
 src/main.obj: src/main.cpp.obj
 .PHONY : src/main.obj
 
@@ -212,12 +191,11 @@ help:
 	@echo ... depend
 	@echo ... codegen
 	@echo ... edit_cache
-	@echo ... install
-	@echo ... install/local
-	@echo ... install/strip
-	@echo ... list_install_components
 	@echo ... rebuild_cache
 	@echo ... application
+	@echo ... src/core/application.obj
+	@echo ... src/core/application.i
+	@echo ... src/core/application.s
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s
