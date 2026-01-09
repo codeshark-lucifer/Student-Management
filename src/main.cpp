@@ -1,6 +1,6 @@
 #include <iostream>
-#include <application.hpp>
 #include <exception>
+#include <application.hpp>
 
 int main()
 {

@@ -30,6 +30,11 @@ Application::Application()
             std::getline(std::cin, user);
             std::cout << "Password: ";
             std::getline(std::cin, pass);
+            // prevent empty input
+            if(user.empty() || pass.empty()) {
+                running = false;
+                break;
+            }
 
             if (db->Authenticate(user, pass))
             {
@@ -64,7 +69,8 @@ Application::Application()
                 std::getline(std::cin, pass);
                 std::cout << "Confirm password: ";
                 std::getline(std::cin, pass2);
-                if (pass == pass2) break;
+                if (pass == pass2)
+                    break;
                 std::cout << "Passwords do not match, try again.\n";
             }
             db->SetCredentials(user, pass);
@@ -105,11 +111,13 @@ void Application::Run()
             {
                 if (authenticated)
                 {
-                    std::cout << "Available commands:\n";
-                    std::cout << "  CREATE TABLE <name> (col TYPE [AUTO_INCREMENT] [PRIMARY KEY] [NOT NULL] [DEFAULT <value>], ...)\n";
+                    std::cout << "  CREATE TABLE <name> (...)\n";
                     std::cout << "  INSERT <TableName> {json}\n";
                     std::cout << "  SELECT <TableName> [WHERE col = value]\n";
                     std::cout << "  REMOVE <TableName> [WHERE col = value]\n";
+                    std::cout << "  REMOVE TABLE <TableName>\n";
+                    std::cout << "  REMOVE ENTITY <TableName> WHERE col = value\n";
+                    std::cout << "  clear | cls | clean\n";
                     std::cout << "  exit\n";
                 }
                 else
@@ -118,13 +126,73 @@ void Application::Run()
                 }
                 continue;
             }
+            // clear / clean terminal command
+            if (input == "clear" || input == "cls" || input == "clean")
+            {
+                ClearConsole();
+                continue;
+            }
+
+            if (input == "example")
+            {
+                std::string msg = R"([EXAMPLES]:
+** Create users table
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT NOT NULL,
+    age INT DEFAULT 18
+)
+    
+** Create students table
+CREATE TABLE students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fullname TEXT NOT NULL,
+    grade INT,
+    email TEXT
+)
+
+** Insert with auto ID
+INSERT users {"name":"Alice","age":21}
+INSERT users {"name":"Bob"}
+INSERT users {"name":"Carol","age":30}
+
+** Insert students
+INSERT students {"fullname":"John Doe","grade":12,"email":"john@gmail.com"}
+INSERT students {"fullname":"Jane Smith","grade":11}
+
+** Select all rows
+SELECT users
+SELECT students
+
+** Select with condition
+SELECT users WHERE name = "Alice"
+SELECT students WHERE grade = 12
+
+** Remove all rows from a table
+REMOVE users
+
+** Remove specific rows
+REMOVE users WHERE name = "Bob"
+REMOVE students WHERE grade = 11
+
+** Alias version (same behavior)
+REMOVE ENTITY users WHERE id = 1
+
+** Delete entire table
+REMOVE TABLE users
+REMOVE TABLE students
+                )";
+            }
 
             QueryResult result = ExecuteQuery(*db, input);
 
             if (result.hasResult)
+            {
                 PrintResult(result);
+                SaveToFile(*db, "database.json");
+            }
         }
-        catch (const std::exception& e)
+        catch (const std::exception &e)
         {
             std::cerr << "[Error] " << e.what() << "\n";
         }
@@ -137,7 +205,7 @@ Application::~Application()
     std::cout << "[DB] Saved database.json\n";
 }
 
-void Application::PrintResult(const QueryResult& result)
+void Application::PrintResult(const QueryResult &result)
 {
     if (result.rows.empty())
     {
@@ -145,10 +213,10 @@ void Application::PrintResult(const QueryResult& result)
         return;
     }
 
-    for (const auto& row : result.rows)
+    for (const auto &row : result.rows)
     {
         std::cout << "{ ";
-        for (const auto& [key, value] : row.fields)
+        for (const auto &[key, value] : row.fields)
         {
             std::cout << key << ": " << value.data << " ";
         }

@@ -12,7 +12,7 @@
 #include <functional>
 
 #include <nlohmann/json.hpp>
-
+#include <iostream>
 using json = nlohmann::json;
 
 /* =======================
@@ -35,7 +35,7 @@ struct Value
     json data;
 
     Value() = default;
-    Value(DType t, const json& d) : type(t), data(d) {}
+    Value(DType t, const json &d) : type(t), data(d) {}
 };
 
 struct Attribute
@@ -51,7 +51,7 @@ struct Attribute
     json defaultValue;
 
     Attribute() = default;
-    Attribute(const std::string& n, DType t) : name(n), type(t) {}
+    Attribute(const std::string &n, DType t) : name(n), type(t) {}
 };
 
 struct Entity
@@ -80,12 +80,13 @@ struct Table
     // For columns declared AUTO_INCREMENT, track next available value
     std::unordered_map<std::string, int64_t> autoIncCounters;
 
-    explicit Table(const std::string& n) : name(n) {}
+    explicit Table(const std::string &n) : name(n) {}
 
-    bool HasColumn(const std::string& col) const
+    bool HasColumn(const std::string &col) const
     {
         return std::any_of(schema.begin(), schema.end(),
-            [&](const Attribute& a) { return a.name == col; });
+                           [&](const Attribute &a)
+                           { return a.name == col; });
     }
 };
 
@@ -96,16 +97,16 @@ struct Table
 class Database
 {
 public:
-    explicit Database(const std::string& n) : name(n) {}
+    explicit Database(const std::string &n) : name(n) {}
 
-    Table& CreateTable(const std::string& tableName)
+    Table &CreateTable(const std::string &tableName)
     {
         auto table = std::make_shared<Table>(tableName);
         tables[tableName] = table;
         return *table;
     }
 
-    Table& GetTable(const std::string& tableName)
+    Table &GetTable(const std::string &tableName)
     {
         auto it = tables.find(tableName);
         if (it == tables.end())
@@ -113,7 +114,16 @@ public:
         return *it->second;
     }
 
-    const Table& GetTable(const std::string& tableName) const
+    void RemoveTable(const std::string &tableName)
+    {
+        auto it = tables.find(tableName);
+        if (it == tables.end())
+            throw std::runtime_error("Table not found: " + tableName);
+
+        tables.erase(it);
+    }
+
+    const Table &GetTable(const std::string &tableName) const
     {
         auto it = tables.find(tableName);
         if (it == tables.end())
@@ -121,7 +131,7 @@ public:
         return *it->second;
     }
 
-    const std::unordered_map<std::string, std::shared_ptr<Table>>&
+    const std::unordered_map<std::string, std::shared_ptr<Table>> &
     GetTables() const
     {
         return tables;
@@ -130,30 +140,30 @@ public:
     // Simple authentication helpers (hashing uses std::hash — not cryptographically secure)
     bool HasCredentials() const { return !authUser.empty(); }
 
-    void SetCredentials(const std::string& user, const std::string& pass)
+    void SetCredentials(const std::string &user, const std::string &pass)
     {
         authUser = user;
         authPassHash = HashPassword(pass);
     }
 
     // Used by Deserialize to set stored hash directly
-    void SetCredentialsHash(const std::string& user, const std::string& hash)
+    void SetCredentialsHash(const std::string &user, const std::string &hash)
     {
         authUser = user;
         authPassHash = hash;
     }
 
-    bool Authenticate(const std::string& user, const std::string& pass) const
+    bool Authenticate(const std::string &user, const std::string &pass) const
     {
         return (authUser == user && authPassHash == HashPassword(pass));
     }
 
-    const std::string& GetAuthUser() const { return authUser; }
-    const std::string& GetAuthHash() const { return authPassHash; }
+    const std::string &GetAuthUser() const { return authUser; }
+    const std::string &GetAuthHash() const { return authPassHash; }
 
 private:
     // Non-cryptographic helper — sufficient for learning/demo purposes
-    static std::string HashPassword(const std::string& pass)
+    static std::string HashPassword(const std::string &pass)
     {
         std::hash<std::string> h;
         auto v = h(pass);
@@ -174,11 +184,11 @@ private:
    CORE OPERATIONS
    ======================= */
 
-inline void Insert(Table& table, const json& values)
+inline void Insert(Table &table, const json &values)
 {
     Entity row;
 
-    for (const auto& attr : table.schema)
+    for (const auto &attr : table.schema)
     {
         // Value provided explicitly
         if (values.contains(attr.name))
@@ -190,8 +200,9 @@ inline void Insert(Table& table, const json& values)
         // AUTO_INCREMENT: generate value
         if (attr.isAutoIncrement)
         {
-            auto& counter = table.autoIncCounters[attr.name];
-            if (counter == 0) counter = 1; // start from 1
+            auto &counter = table.autoIncCounters[attr.name];
+            if (counter == 0)
+                counter = 1; // start from 1
             row.fields[attr.name] = Value(attr.type, counter);
             counter++;
             continue;
@@ -213,12 +224,13 @@ inline void Insert(Table& table, const json& values)
     }
 
     // Enforce primary key uniqueness (simple single-column keys)
-    for (const auto& attr : table.schema)
+    for (const auto &attr : table.schema)
     {
-        if (!attr.isPrimaryKey) continue;
-        const auto& key = attr.name;
-        const auto& val = row.fields.at(key).data;
-        for (const auto& existing : table.rows)
+        if (!attr.isPrimaryKey)
+            continue;
+        const auto &key = attr.name;
+        const auto &val = row.fields.at(key).data;
+        for (const auto &existing : table.rows)
         {
             if (existing.fields.at(key).data == val)
                 throw std::runtime_error("Duplicate primary key: " + key);
@@ -229,13 +241,13 @@ inline void Insert(Table& table, const json& values)
 }
 
 inline std::vector<Entity> Select(
-    const Table& table,
-    const std::string& column,
-    const json& value)
+    const Table &table,
+    const std::string &column,
+    const json &value)
 {
     std::vector<Entity> result;
 
-    for (const auto& row : table.rows)
+    for (const auto &row : table.rows)
     {
         if (row.fields.at(column).data == value)
             result.push_back(row);
@@ -245,19 +257,19 @@ inline std::vector<Entity> Select(
 }
 
 inline bool ValidateForeignKeys(
-    const Table& table,
-    const Database& db)
+    const Table &table,
+    const Database &db)
 {
-    for (const auto& fk : table.foreignKeys)
+    for (const auto &fk : table.foreignKeys)
     {
-        const auto& refTable = db.GetTable(fk.refTable);
+        const auto &refTable = db.GetTable(fk.refTable);
 
-        for (const auto& row : table.rows)
+        for (const auto &row : table.rows)
         {
-            const auto& val = row.fields.at(fk.column).data;
+            const auto &val = row.fields.at(fk.column).data;
 
             bool found = false;
-            for (const auto& refRow : refTable.rows)
+            for (const auto &refRow : refTable.rows)
             {
                 if (refRow.fields.at(fk.refColumn).data == val)
                 {
@@ -283,7 +295,7 @@ struct QueryResult
     std::vector<Entity> rows;
 };
 
-inline std::vector<std::string> Tokenize(const std::string& q)
+inline std::vector<std::string> Tokenize(const std::string &q)
 {
     std::stringstream ss(q);
     std::string tok;
@@ -295,7 +307,7 @@ inline std::vector<std::string> Tokenize(const std::string& q)
     return tokens;
 }
 
-inline QueryResult ExecuteQuery(Database& db, const std::string& query)
+inline QueryResult ExecuteQuery(Database &db, const std::string &query)
 {
     auto tokens = Tokenize(query);
 
@@ -320,7 +332,7 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
         if (db.GetTables().find(tableName) != db.GetTables().end())
             throw std::runtime_error("Table already exists: " + tableName);
 
-        auto& table = db.CreateTable(tableName);
+        auto &table = db.CreateTable(tableName);
 
         auto colsText = query.substr(parenStart + 1, parenEnd - parenStart - 1);
         std::stringstream ss(colsText);
@@ -329,7 +341,8 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
         {
             auto l = colDef.find_first_not_of(" \t\n\r");
             auto r = colDef.find_last_not_of(" \t\n\r");
-            if (l == std::string::npos) continue;
+            if (l == std::string::npos)
+                continue;
             std::string def = colDef.substr(l, r - l + 1);
 
             std::stringstream ds(def);
@@ -347,13 +360,20 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
             std::transform(typeStr.begin(), typeStr.end(), typeStr.begin(), ::toupper);
 
             DType dtype;
-            if (typeStr == "TEXT") dtype = DType::TEXT;
-            else if (typeStr == "CHAR") dtype = DType::CHAR;
-            else if (typeStr == "INT") dtype = DType::INT;
-            else if (typeStr == "FLOAT") dtype = DType::FLOAT;
-            else if (typeStr == "REAL") dtype = DType::REAL;
-            else if (typeStr == "RELATION") dtype = DType::RELATION;
-            else throw std::runtime_error("Unknown type: " + typeStr);
+            if (typeStr == "TEXT")
+                dtype = DType::TEXT;
+            else if (typeStr == "CHAR")
+                dtype = DType::CHAR;
+            else if (typeStr == "INT")
+                dtype = DType::INT;
+            else if (typeStr == "FLOAT")
+                dtype = DType::FLOAT;
+            else if (typeStr == "REAL")
+                dtype = DType::REAL;
+            else if (typeStr == "RELATION")
+                dtype = DType::RELATION;
+            else
+                throw std::runtime_error("Unknown type: " + typeStr);
 
             Attribute attr(colName, dtype);
 
@@ -374,16 +394,19 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
             {
                 // find original 'DEFAULT' position in modifiers to get original-case token
                 auto origDefPos = modifiers.find_first_of("DEFAULT");
-                if (origDefPos == std::string::npos) origDefPos = defPos; // fallback
+                if (origDefPos == std::string::npos)
+                    origDefPos = defPos;      // fallback
                 size_t vpos = origDefPos + 7; // length of DEFAULT
                 // skip whitespace
-                while (vpos < modifiers.size() && isspace((unsigned char)modifiers[vpos])) ++vpos;
+                while (vpos < modifiers.size() && isspace((unsigned char)modifiers[vpos]))
+                    ++vpos;
                 if (vpos < modifiers.size())
                 {
                     if (modifiers[vpos] == '"')
                     {
                         size_t endq = modifiers.find('"', vpos + 1);
-                        if (endq == std::string::npos) throw std::runtime_error("Unterminated DEFAULT string in: " + def);
+                        if (endq == std::string::npos)
+                            throw std::runtime_error("Unterminated DEFAULT string in: " + def);
                         std::string dv = modifiers.substr(vpos + 1, endq - vpos - 1);
                         attr.hasDefault = true;
                         attr.defaultValue = dv;
@@ -392,11 +415,18 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
                     {
                         // read until space or end
                         size_t endv = vpos;
-                        while (endv < modifiers.size() && !isspace((unsigned char)modifiers[endv])) ++endv;
+                        while (endv < modifiers.size() && !isspace((unsigned char)modifiers[endv]))
+                            ++endv;
                         std::string dv = modifiers.substr(vpos, endv - vpos);
                         // try to parse as json (numbers, booleans), fall back to string
-                        try { attr.defaultValue = json::parse(dv); }
-                        catch (...) { attr.defaultValue = dv; }
+                        try
+                        {
+                            attr.defaultValue = json::parse(dv);
+                        }
+                        catch (...)
+                        {
+                            attr.defaultValue = dv;
+                        }
                         attr.hasDefault = true;
                     }
                 }
@@ -410,7 +440,78 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
 
         return {};
     }
+    /* -------- REMOVE --------
+   REMOVE TABLE <name>
+   REMOVE <Table> [WHERE col = value]
+   REMOVE ENTITY <Table> WHERE col = value
+*/
+    if (tokens[0] == "REMOVE")
+    {
+        QueryResult result;
+        result.hasResult = true;
 
+        /* ---- REMOVE TABLE ---- */
+        if (tokens.size() >= 3 && tokens[1] == "TABLE")
+        {
+            const std::string &tableName = tokens[2];
+            db.RemoveTable(tableName);
+            std::cout << "[DB] Table removed: " << tableName << "\n";
+            return {};
+        }
+
+        /* ---- REMOVE ENTITY alias ---- */
+        size_t tableIndex = 1;
+        if (tokens.size() >= 3 && tokens[1] == "ENTITY")
+            tableIndex = 2;
+
+        if (tokens.size() <= tableIndex)
+            throw std::runtime_error("Invalid REMOVE syntax");
+
+        auto &table = db.GetTable(tokens[tableIndex]);
+
+        // REMOVE <Table>   (remove all rows)
+        if (tokens.size() == tableIndex + 1)
+        {
+            result.rows = table.rows;
+            table.rows.clear();
+            return result;
+        }
+
+        // REMOVE <Table> WHERE col = value
+        // REMOVE ENTITY <Table> WHERE col = value
+        if (tokens.size() >= tableIndex + 5 &&
+            tokens[tableIndex + 1] == "WHERE" &&
+            tokens[tableIndex + 3] == "=")
+        {
+            json value;
+            const std::string &raw = tokens[tableIndex + 4];
+
+            if (!raw.empty() && raw.front() == '"')
+                value = raw.substr(1, raw.size() - 2);
+            else
+                value = json::parse(raw);
+
+            std::vector<Entity> removed;
+            auto &rows = table.rows;
+            auto it = rows.begin();
+
+            while (it != rows.end())
+            {
+                if (it->fields.at(tokens[tableIndex + 2]).data == value)
+                {
+                    removed.push_back(*it);
+                    it = rows.erase(it);
+                }
+                else
+                    ++it;
+            }
+
+            result.rows = removed;
+            return result;
+        }
+
+        throw std::runtime_error("Invalid REMOVE syntax");
+    }
     /* -------- INSERT --------
        INSERT TableName {json}
     */
@@ -420,7 +521,7 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
             throw std::runtime_error("Invalid INSERT syntax");
 
         auto jsonStart = query.find('{');
-        auto jsonEnd   = query.rfind('}');
+        auto jsonEnd = query.rfind('}');
 
         if (jsonStart == std::string::npos || jsonEnd == std::string::npos)
             throw std::runtime_error("INSERT requires JSON object");
@@ -444,7 +545,7 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
         QueryResult result;
         result.hasResult = true;
 
-        const auto& table = db.GetTable(tokens[1]);
+        const auto &table = db.GetTable(tokens[1]);
 
         if (tokens.size() == 2)
         {
@@ -479,7 +580,7 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
         QueryResult result;
         result.hasResult = true;
 
-        auto& table = db.GetTable(tokens[1]);
+        auto &table = db.GetTable(tokens[1]);
 
         // Remove all rows
         if (tokens.size() == 2)
@@ -499,7 +600,7 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
 
             // remove matching rows
             std::vector<Entity> removed;
-            auto& rows = table.rows;
+            auto &rows = table.rows;
             auto it = rows.begin();
             while (it != rows.end())
             {
@@ -508,7 +609,8 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
                     removed.push_back(*it);
                     it = rows.erase(it);
                 }
-                else ++it;
+                else
+                    ++it;
             }
 
             result.rows = removed;
@@ -525,31 +627,34 @@ inline QueryResult ExecuteQuery(Database& db, const std::string& query)
    SERIALIZATION
    ======================= */
 
-inline json Serialize(const Database& db)
+inline json Serialize(const Database &db)
 {
     json j;
 
-    for (const auto& [name, table] : db.GetTables())
+    for (const auto &[name, table] : db.GetTables())
     {
         json jt;
 
-        for (const auto& attr : table->schema)
+        for (const auto &attr : table->schema)
         {
             json aj = {
                 {"name", attr.name},
-                {"type", static_cast<int>(attr.type)}
-            };
-            if (attr.isPrimaryKey) aj["primary"] = true;
-            if (attr.isAutoIncrement) aj["auto"] = true;
-            if (attr.isNotNull) aj["not_null"] = true;
-            if (attr.hasDefault) aj["default"] = attr.defaultValue;
+                {"type", static_cast<int>(attr.type)}};
+            if (attr.isPrimaryKey)
+                aj["primary"] = true;
+            if (attr.isAutoIncrement)
+                aj["auto"] = true;
+            if (attr.isNotNull)
+                aj["not_null"] = true;
+            if (attr.hasDefault)
+                aj["default"] = attr.defaultValue;
             jt["schema"].push_back(aj);
         }
 
-        for (const auto& row : table->rows)
+        for (const auto &row : table->rows)
         {
             json jr;
-            for (const auto& [k, v] : row.fields)
+            for (const auto &[k, v] : row.fields)
                 jr[k] = v.data;
             jt["rows"].push_back(jr);
         }
@@ -562,68 +667,78 @@ inline json Serialize(const Database& db)
     {
         j["__meta"]["auth"] = {
             {"user", db.GetAuthUser()},
-            {"pass", db.GetAuthHash()}
-        };
+            {"pass", db.GetAuthHash()}};
     }
 
     return j;
 }
 
-inline void Deserialize(Database& db, const json& j)
+inline void Deserialize(Database &db, const json &j)
 {
     // Handle optional metadata
     if (j.contains("__meta") && j["__meta"].contains("auth"))
     {
-        const auto& auth = j["__meta"]["auth"];
+        const auto &auth = j["__meta"]["auth"];
         if (auth.contains("user") && auth.contains("pass"))
         {
             db.SetCredentialsHash(auth["user"].get<std::string>(), auth["pass"].get<std::string>());
         }
     }
 
-    for (const auto& [tableName, tableData] : j.items())
+    for (const auto &[tableName, tableData] : j.items())
     {
-        if (tableName == "__meta") continue; // skip metadata
+        if (tableName == "__meta")
+            continue; // skip metadata
 
-        auto& table = db.CreateTable(tableName);
+        auto &table = db.CreateTable(tableName);
 
         if (tableData.contains("schema"))
         {
-            for (const auto& attr : tableData["schema"])
+            for (const auto &attr : tableData["schema"])
             {
                 Attribute a(
                     attr["name"].get<std::string>(),
-                    static_cast<DType>(attr["type"].get<int>())
-                );
-                if (attr.contains("primary")) a.isPrimaryKey = attr["primary"].get<bool>();
-                if (attr.contains("auto")) a.isAutoIncrement = attr["auto"].get<bool>();
-                if (attr.contains("not_null")) a.isNotNull = attr["not_null"].get<bool>();
-                if (attr.contains("default")) { a.hasDefault = true; a.defaultValue = attr["default"]; }
+                    static_cast<DType>(attr["type"].get<int>()));
+                if (attr.contains("primary"))
+                    a.isPrimaryKey = attr["primary"].get<bool>();
+                if (attr.contains("auto"))
+                    a.isAutoIncrement = attr["auto"].get<bool>();
+                if (attr.contains("not_null"))
+                    a.isNotNull = attr["not_null"].get<bool>();
+                if (attr.contains("default"))
+                {
+                    a.hasDefault = true;
+                    a.defaultValue = attr["default"];
+                }
                 table.schema.push_back(a);
-                if (a.isAutoIncrement) table.autoIncCounters[a.name] = 1;
+                if (a.isAutoIncrement)
+                    table.autoIncCounters[a.name] = 1;
             }
         }
 
         if (tableData.contains("rows"))
         {
-            for (const auto& row : tableData["rows"])
+            for (const auto &row : tableData["rows"])
             {
                 Insert(table, row);
             }
 
             // adjust auto-increment counters based on max existing values
-            for (const auto& a : table.schema)
+            for (const auto &a : table.schema)
             {
-                if (!a.isAutoIncrement) continue;
+                if (!a.isAutoIncrement)
+                    continue;
                 int64_t maxv = 0;
-                for (const auto& r : table.rows)
+                for (const auto &r : table.rows)
                 {
                     auto it = r.fields.find(a.name);
-                    if (it == r.fields.end()) continue;
+                    if (it == r.fields.end())
+                        continue;
                     if (it->second.data.is_number())
                     {
                         int64_t v = it->second.data.get<int64_t>();
-                        if (v > maxv) maxv = v;
+                        if (v > maxv)
+                            maxv = v;
                     }
                 }
                 table.autoIncCounters[a.name] = maxv + 1;
@@ -632,13 +747,13 @@ inline void Deserialize(Database& db, const json& j)
     }
 }
 
-inline void SaveToFile(const Database& db, const std::string& path)
+inline void SaveToFile(const Database &db, const std::string &path)
 {
     std::ofstream file(path);
     file << Serialize(db).dump(4);
 }
 
-inline void LoadFromFile(Database& db, const std::string& path)
+inline void LoadFromFile(Database &db, const std::string &path)
 {
     std::ifstream file(path);
     json j;
