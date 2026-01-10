@@ -4,5 +4,26 @@
             "pass": "8c039e9e9dfbadf3",
             "user": "sovann"
         }
+    },
+    "users": {
+        "rows": [
+            {
+                "id": 1,
+                "name": "sovann"
+            }
+        ],
+        "schema": [
+            {
+                "auto": true,
+                "name": "id",
+                "primary": true,
+                "type": 2
+            },
+            {
+                "name": "name",
+                "not_null": true,
+                "type": 0
+            }
+        ]
     }
 }

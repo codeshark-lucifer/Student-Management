@@ -31,7 +31,8 @@ Application::Application()
             std::cout << "Password: ";
             std::getline(std::cin, pass);
             // prevent empty input
-            if(user.empty() || pass.empty()) {
+            if (user.empty() || pass.empty())
+            {
                 running = false;
                 break;
             }
@@ -135,53 +136,59 @@ void Application::Run()
 
             if (input == "example")
             {
-                std::string msg = R"([EXAMPLES]:
-** Create users table
+                std::string msg = R"(
+================ EXAMPLES ================
+
+-- Create users table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
     age INT DEFAULT 18
 )
-    
-** Create students table
-CREATE TABLE students (
+
+-- Create student table
+CREATE TABLE student (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fullname TEXT NOT NULL,
-    grade INT,
-    email TEXT
+    grade INT
 )
 
-** Insert with auto ID
+-- Insert with auto ID
 INSERT users {"name":"Alice","age":21}
 INSERT users {"name":"Bob"}
 INSERT users {"name":"Carol","age":30}
 
-** Insert students
-INSERT students {"fullname":"John Doe","grade":12,"email":"john@gmail.com"}
-INSERT students {"fullname":"Jane Smith","grade":11}
+-- Insert student
+INSERT student {"fullname":"John Doe","grade":12}
+INSERT student {"fullname":"Jane Smith","grade":11}
 
-** Select all rows
+-- Select all rows
 SELECT users
-SELECT students
+SELECT student
 
-** Select with condition
+-- Select with condition
 SELECT users WHERE name = "Alice"
-SELECT students WHERE grade = 12
+SELECT student WHERE grade = 12
 
-** Remove all rows from a table
+-- Remove all rows from a table
 REMOVE users
 
-** Remove specific rows
+-- Remove specific rows
 REMOVE users WHERE name = "Bob"
-REMOVE students WHERE grade = 11
+REMOVE student WHERE grade = 11
 
-** Alias version (same behavior)
+-- Alias version
 REMOVE ENTITY users WHERE id = 1
 
-** Delete entire table
+-- Delete entire table
 REMOVE TABLE users
-REMOVE TABLE students
-                )";
+REMOVE TABLE student
+
+==========================================
+)";
+
+                std::cout << msg << "\n";
+                continue; 
             }
 
             QueryResult result = ExecuteQuery(*db, input);
