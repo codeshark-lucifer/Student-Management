@@ -565,26 +565,41 @@ inline QueryResult ExecuteQuery(Database &db, const std::string &query)
     /* -------- UPDATE --------
        UPDATE TableName SET {json} WHERE col = value
     */
+    /* -------- UPDATE --------
+       UPDATE TableName SET {json} WHERE col = value
+    */
     if (tokens[0] == "UPDATE")
     {
-        if (tokens.size() < 7 || tokens[2] != "SET" || tokens[4] != "WHERE" || tokens[6] != "=")
+        if (tokens.size() < 7 || tokens[2] != "SET")
             throw std::runtime_error("Invalid UPDATE syntax. Expected: UPDATE TableName SET {json} WHERE col = value");
 
         std::string tableName = tokens[1];
         auto &table = db.GetTable(tableName);
 
         // Find the start and end of the JSON object for new values
-        auto setJsonStart = query.find('{', query.find("SET") + 3); // Find '{' after "SET"
-        auto setJsonEnd = query.find('}', setJsonStart);
-        if (setJsonStart == std::string::npos || setJsonEnd == std::string::npos)
+        auto setPos = query.find("SET");
+        auto jsonStart = query.find('{', setPos);
+        auto jsonEnd = query.find('}', jsonStart);
+        if (jsonStart == std::string::npos || jsonEnd == std::string::npos)
             throw std::runtime_error("UPDATE requires JSON object for SET clause.");
-        std::string setJsonText = query.substr(setJsonStart, setJsonEnd - setJsonStart + 1);
+        std::string setJsonText = query.substr(jsonStart, jsonEnd - jsonStart + 1);
         json newValues = json::parse(setJsonText);
 
-        // Find the column and value for the WHERE clause
-        std::string whereColumn = tokens[5];
+        // Find WHERE clause part by searching for "WHERE" after the JSON part
+        auto wherePos = query.find("WHERE", jsonEnd);
+        if (wherePos == std::string::npos)
+            throw std::runtime_error("Invalid UPDATE syntax. WHERE clause not found after JSON.");
+        
+        // Tokenize just the "WHERE ..." part to correctly parse it
+        std::string whereClause = query.substr(wherePos);
+        std::vector<std::string> whereTokens = Tokenize(whereClause);
+
+        if (whereTokens.size() < 4 || whereTokens[0] != "WHERE" || whereTokens[2] != "=")
+            throw std::runtime_error("Invalid WHERE clause syntax. Expected: WHERE col = value");
+
+        std::string whereColumn = whereTokens[1];
         json whereValue;
-        std::string rawWhereValue = tokens[7];
+        std::string rawWhereValue = whereTokens[3];
         if (rawWhereValue.front() == '"' && rawWhereValue.back() == '"')
             whereValue = rawWhereValue.substr(1, rawWhereValue.size() - 2);
         else

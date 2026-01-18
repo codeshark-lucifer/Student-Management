@@ -8,15 +8,16 @@
     "users": {
         "rows": [
             {
-                "grade": 11,
+                "code": 117,
                 "id": 1,
-                "name": "sovann"
+                "name": "New Name"
             }
         ],
         "schema": [
             {
                 "auto": true,
                 "name": "id",
+                "not_null": true,
                 "primary": true,
                 "type": 2
             },
@@ -26,7 +27,7 @@
                 "type": 0
             },
             {
-                "name": "grade",
+                "name": "code",
                 "type": 2
             }
         ]
