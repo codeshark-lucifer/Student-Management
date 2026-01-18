@@ -163,6 +163,9 @@ INSERT users {"name":"Carol","age":30}
 INSERT student {"fullname":"John Doe","grade":12}
 INSERT student {"fullname":"Jane Smith","grade":11}
 
+-- Update entity
+UPDATE users SET {"name":"New Name"} WHERE id = 1
+
 -- Select all rows
 SELECT users
 SELECT student
