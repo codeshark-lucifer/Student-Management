@@ -114,6 +114,7 @@ void Application::Run()
                 {
                     std::cout << "  CREATE TABLE <name> (...)\n";
                     std::cout << "  INSERT <TableName> {json}\n";
+                    std::cout << "  UPDATE <TableName> SET {json} WHERE col = value\n";
                     std::cout << "  SELECT <TableName> [WHERE col = value]\n";
                     std::cout << "  REMOVE <TableName> [WHERE col = value]\n";
                     std::cout << "  REMOVE TABLE <TableName>\n";

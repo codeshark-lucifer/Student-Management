@@ -256,6 +256,35 @@ inline std::vector<Entity> Select(
     return result;
 }
 
+inline std::vector<Entity> Update(
+    Table &table,
+    const std::string &column,
+    const json &value,
+    const json &newValues)
+{
+    std::vector<Entity> updatedRows;
+    for (auto &row : table.rows)
+    {
+        if (row.fields.at(column).data == value)
+        {
+            for (const auto &[key, val] : newValues.items())
+            {
+                // Check if the column exists in the schema
+                auto it = std::find_if(table.schema.begin(), table.schema.end(),
+                                       [&](const Attribute &attr)
+                                       { return attr.name == key; });
+                if (it != table.schema.end())
+                {
+                    row.fields[key] = Value(it->type, val);
+                }
+            }
+            updatedRows.push_back(row);
+        }
+    }
+    return updatedRows;
+}
+
+
 inline bool ValidateForeignKeys(
     const Table &table,
     const Database &db)
@@ -531,6 +560,40 @@ inline QueryResult ExecuteQuery(Database &db, const std::string &query)
 
         Insert(db.GetTable(tokens[1]), values);
         return {};
+    }
+
+    /* -------- UPDATE --------
+       UPDATE TableName SET {json} WHERE col = value
+    */
+    if (tokens[0] == "UPDATE")
+    {
+        if (tokens.size() < 7 || tokens[2] != "SET" || tokens[4] != "WHERE" || tokens[6] != "=")
+            throw std::runtime_error("Invalid UPDATE syntax. Expected: UPDATE TableName SET {json} WHERE col = value");
+
+        std::string tableName = tokens[1];
+        auto &table = db.GetTable(tableName);
+
+        // Find the start and end of the JSON object for new values
+        auto setJsonStart = query.find('{', query.find("SET") + 3); // Find '{' after "SET"
+        auto setJsonEnd = query.find('}', setJsonStart);
+        if (setJsonStart == std::string::npos || setJsonEnd == std::string::npos)
+            throw std::runtime_error("UPDATE requires JSON object for SET clause.");
+        std::string setJsonText = query.substr(setJsonStart, setJsonEnd - setJsonStart + 1);
+        json newValues = json::parse(setJsonText);
+
+        // Find the column and value for the WHERE clause
+        std::string whereColumn = tokens[5];
+        json whereValue;
+        std::string rawWhereValue = tokens[7];
+        if (rawWhereValue.front() == '"' && rawWhereValue.back() == '"')
+            whereValue = rawWhereValue.substr(1, rawWhereValue.size() - 2);
+        else
+            whereValue = json::parse(rawWhereValue);
+        
+        QueryResult result;
+        result.hasResult = true;
+        result.rows = Update(table, whereColumn, whereValue, newValues);
+        return result;
     }
 
     /* -------- SELECT --------
