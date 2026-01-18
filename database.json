@@ -8,6 +8,7 @@
     "users": {
         "rows": [
             {
+                "grade": 11,
                 "id": 1,
                 "name": "sovann"
             }
@@ -23,6 +24,10 @@
                 "name": "name",
                 "not_null": true,
                 "type": 0
+            },
+            {
+                "name": "grade",
+                "type": 2
             }
         ]
     }
